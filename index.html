@@ -1,6 +1,49 @@
 ---
 layout: default
 ---
+<!-- 1. CSS STYLE FOR TABS -->
+<style>
+  /* Style the tab container */
+  .tab-nav {
+    overflow: hidden;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 20px;
+  }
+
+  /* Style the buttons inside the tab */
+  .tab-nav a {
+    float: left;
+    display: block;
+    color: #159957; /* Cayman Green */
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+    border: 1px solid transparent;
+    border-bottom: none;
+  }
+
+  /* Change color on hover */
+  .tab-nav a:hover {
+    background-color: #f1f1f1;
+  }
+
+  /* Style the "active" tab (shows which page you are on) */
+  .tab-nav a.active {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-bottom: 2px solid white; /* Hides the bottom line */
+    font-weight: bold;
+    color: #000;
+    margin-bottom: -1px;
+  }
+</style>
+
+<!-- 2. THE NAVIGATION HTML -->
+<div class="tab-nav">
+  <a href="./index.html" class="active">Home</a>
+  <a href="./results.html">Results</a>
+</div>
     <h2>Velkommen til NSBK's årskonkuranser</h2>
     <p>Nedenfor finner du linker til google forms skjemaer som må fylles ut for deltakelse i årskonkurransene</p>
     <ul>
