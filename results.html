@@ -1,0 +1,59 @@
+---
+layout: default
+title: Results
+---
+
+<!-- 1. CSS STYLE FOR TABS (Same as above) -->
+<style>
+  .tab-nav { overflow: hidden; border-bottom: 1px solid #ccc; margin-bottom: 20px; }
+  .tab-nav a { float: left; display: block; color: #159957; text-align: center; padding: 14px 16px; text-decoration: none; font-size: 17px; border: 1px solid transparent; border-bottom: none; }
+  .tab-nav a:hover { background-color: #f1f1f1; }
+  .tab-nav a.active { background-color: #fff; border: 1px solid #ccc; border-bottom: 2px solid white; font-weight: bold; color: #000; margin-bottom: -1px; }
+  
+  /* Extra styling for the results table */
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+  th { background-color: #f2f2f2; }
+</style>
+
+<!-- 2. THE NAVIGATION HTML -->
+<div class="tab-nav">
+  <a href="./index.html">Home</a>
+  <a href="./results.html" class="active">Results</a>
+</div>
+
+<!-- 3. PAGE CONTENT -->
+<h2>Test Results</h2>
+<p>Here are the findings from our latest analysis:</p>
+
+<!-- A Results Table -->
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Test Name</th>
+      <th>Status</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>001</td>
+      <td>Alpha Test</td>
+      <td style="color: green;">Passed</td>
+      <td>98%</td>
+    </tr>
+    <tr>
+      <td>002</td>
+      <td>Beta Test</td>
+      <td style="color: green;">Passed</td>
+      <td>85%</td>
+    </tr>
+    <tr>
+      <td>003</td>
+      <td>Gamma Test</td>
+      <td style="color: red;">Failed</td>
+      <td>42%</td>
+    </tr>
+  </tbody>
+</table>
