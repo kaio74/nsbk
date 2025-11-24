@@ -1,96 +1,124 @@
----
-layout: default
-title: Resultater
----
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <style>
-  /* --- Tab Navigation Styles --- */
-  .tab-nav { overflow: hidden; border-bottom: 1px solid #ccc; margin-bottom: 20px; }
-  .tab-nav a { float: left; display: block; color: #159957; text-align: center; padding: 14px 16px; text-decoration: none; font-size: 17px; border: 1px solid transparent; border-bottom: none; }
-  .tab-nav a:hover { background-color: #f1f1f1; }
-  .tab-nav a.active { background-color: #fff; border: 1px solid #ccc; border-bottom: 2px solid white; font-weight: bold; color: #000; margin-bottom: -1px; }
+  /* Loading state */
+  #loader { font-style: italic; color: #606c71; }
+
+  /* Table enhancements for Cayman */
+  table {
+    width: 100%;
+    display: table; /* Override Cayman's block display for better width control */
+    margin-bottom: 2rem;
+    border-collapse: collapse;
+  }
   
-  /* --- Table Styles --- */
-  table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
-  th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-  th { background-color: #f2f2f2; font-weight: bold; }
+  /* Rank Highlighting */
+  tr.rank-1 { background-color: #fff8db; border-left: 4px solid #ffd700; }
+  tr.rank-2 { border-left: 4px solid #c0c0c0; }
+  tr.rank-3 { border-left: 4px solid #cd7f32; }
 
-  /* Rank Column (First Column) Tweaks */
-  th:first-child, td:first-child { width: 50px; text-align: center; }
+  /* Medal Icons */
+  tr.rank-1 td:first-child::after { content: " 🥇"; }
+  tr.rank-2 td:first-child::after { content: " 🥈"; }
+  tr.rank-3 td:first-child::after { content: " 🥉"; }
 
-  /* Top 3 Leaderboard Highlights */
-  tbody tr:nth-child(1) td { color: #d4af37; font-weight: bold; background-color: rgba(212, 175, 55, 0.1); } /* Gold */
-  tbody tr:nth-child(2) td { color: #7a7a7a; font-weight: bold; background-color: rgba(192, 192, 192, 0.1); } /* Silver */
-  tbody tr:nth-child(3) td { color: #cd7f32; font-weight: bold; background-color: rgba(205, 127, 50, 0.1); } /* Bronze */
+  /* Header styling to match Cayman */
+  h2.group-header {
+    margin-top: 3rem;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 0.5rem;
+    color: #159957; /* Cayman Green */
+  }
 
-  /* Loading Message Style */
-  .loading { text-align: center; font-style: italic; color: #606c71; margin: 20px 0; }
+  /* Mobile tweaks */
+  @media (max-width: 600px) {
+    .hide-mobile { display: none; }
+    table { font-size: 0.9em; }
+  }
 </style>
 
-<div class="tab-nav">
-  <a href="./index.html">Påmelding</a>
-  <a href="./results.html" class="active">Resultater</a>
+<div id="leaderboard-container">
+  <div id="loader">Henter data fra Google Sheets...</div>
 </div>
 
-<h2>Resultater fra årskonkurrasene</h2>
-<p>Kontinuerlig oppdaterte inntil påmeldingsfrist er utløpt:</p>
-
-<div id="loadingMessage" class="loading">Henter resultater...</div>
-
-<table id="leaderboardTable" style="display:none;">
-  <thead>
-    </thead>
-  <tbody>
-    </tbody>
-</table>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-    // *** IMPORTANT: PASTE YOUR GOOGLE SHEET CSV LINK BELOW ***
-    const sheetUrl = 'YOUR_PUBLISHED_GOOGLE_SHEET_LINK_HERE'; 
+  // --- CONFIGURATION ---
+  // PASTE YOUR GOOGLE SHEET CSV LINK BELOW:
+  const sheetURL = "YOUR_GOOGLE_SHEET_CSV_LINK_HERE";
 
-    Papa.parse(sheetUrl, {
-        download: true,
-        header: true,
-        complete: function(results) {
-            const data = results.data;
-            const table = document.getElementById('leaderboardTable');
-            const tableHead = table.querySelector('thead');
-            const tableBody = table.querySelector('tbody');
-            const loadingMsg = document.getElementById('loadingMessage');
+  Papa.parse(sheetURL, {
+    download: true,
+    header: true,
+    complete: function(results) {
+      processData(results.data);
+    }
+  });
 
-            // 1. Create Headers (Dynamic based on Sheet)
-            if (data.length > 0) {
-                const headers = Object.keys(data[0]);
-                let headerRow = '<tr><th>#</th>'; // Adds a Rank column
-                headers.forEach(header => {
-                    headerRow += `<th>${header}</th>`;
-                });
-                headerRow += '</tr>';
-                tableHead.innerHTML = headerRow;
-            }
+  function processData(data) {
+    const container = document.getElementById('leaderboard-container');
+    container.innerHTML = ""; 
 
-            // 2. Create Rows
-            data.forEach((row, index) => {
-                // Skip empty rows in the sheet
-                if (Object.values(row).every(x => x === null || x === '')) return;
+    // 1. Filter empty rows
+    data = data.filter(row => row['Hundens navn'] && row['rase']);
 
-                let htmlRow = `<tr>`;
-                htmlRow += `<td>${index + 1}</td>`; // The Rank Number
-                Object.values(row).forEach(cell => {
-                    htmlRow += `<td>${cell}</td>`;
-                });
-                htmlRow += `</tr>`;
-                tableBody.innerHTML += htmlRow;
-            });
-
-            // 3. Reveal the table
-            loadingMsg.style.display = 'none';
-            table.style.display = 'table';
-        },
-        error: function(err) {
-            document.getElementById('loadingMessage').innerText = "Kunne ikke laste data.";
-            console.error("Error:", err);
-        }
+    // 2. Group by Rase + Farge
+    const groups = {};
+    data.forEach(row => {
+      const rase = (row['rase'] || "").trim();
+      const farge = (row['farge'] || "").trim();
+      const key = `${rase} - ${farge}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(row);
     });
+
+    // 3. Sort Groups Alphabetically
+    const sortedKeys = Object.keys(groups).sort();
+
+    sortedKeys.forEach(groupKey => {
+      // 4. Sort dogs by Points (Descending)
+      const dogs = groups[groupKey].sort((a, b) => Number(b['Poeng']) - Number(a['Poeng']));
+      createTable(container, groupKey, dogs);
+    });
+  }
+
+  function createTable(container, title, dogs) {
+    // Header
+    const h2 = document.createElement('h2');
+    h2.className = 'group-header';
+    h2.textContent = title;
+    container.appendChild(h2);
+
+    // Table
+    const table = document.createElement('table');
+    let html = `
+      <thead>
+        <tr>
+          <th width="10%">#</th>
+          <th width="15%">Poeng</th>
+          <th>Hundens navn</th>
+          <th class="hide-mobile">Reg. nr</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+
+    dogs.forEach((dog, index) => {
+      const rank = index + 1;
+      const rankClass = rank <= 3 ? `rank-${rank}` : '';
+      const titles = dog['Hundens titler'] ? `<br><small style="color:#666">${dog['Hundens titler']}</small>` : '';
+
+      html += `
+        <tr class="${rankClass}">
+          <td>${rank}</td>
+          <td><strong>${dog['Poeng']}</strong></td>
+          <td>${dog['Hundens navn']} ${titles}</td>
+          <td class="hide-mobile"><small>${dog['Hundens reg. nr']}</small></td>
+        </tr>
+      `;
+    });
+
+    html += `</tbody>`;
+    table.innerHTML = html;
+    container.appendChild(table);
+  }
 </script>
